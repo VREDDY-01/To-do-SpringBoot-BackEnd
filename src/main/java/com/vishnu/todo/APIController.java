@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class APIController {
@@ -70,5 +71,25 @@ public class APIController {
 	public String deleteAllItems(){
 		todoList.clear();
 		return "All task deleted!!";
+	}
+
+	//get all undone to-do items
+	@GetMapping("todos/undone")
+	public List<Todo> getUndone(){
+		return todoList.stream().filter((todo)->!todo.isStatus()).collect(Collectors.toList());
+	}
+
+	//delete a list of Items
+	@DeleteMapping("todos/deleteItems")
+	public List<Todo> deleteItems(@RequestBody List<Integer> ids){
+		for (Integer id : ids) {
+			for (int j = 0; j < todoList.size(); j++) {
+				if (id.equals(todoList.get(j).getTodoId())) {
+					todoList.remove(todoList.get(j));
+					break;
+				}
+			}
+		}
+		return todoList;
 	}
 }
