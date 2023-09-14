@@ -1,4 +1,4 @@
-package com.vishnu.todo;
+package com.vishnu.todo.entities;
 
 public class Todo {
 	private int todoId;

@@ -1,5 +1,6 @@
-package com.vishnu.todo;
+package com.vishnu.todo.repo;
 
+import com.vishnu.todo.entities.Todo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
