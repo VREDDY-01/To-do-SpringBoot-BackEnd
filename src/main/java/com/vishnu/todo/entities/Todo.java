@@ -1,37 +1,33 @@
 package com.vishnu.todo.entities;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
 public class Todo {
-	private int todoId;
+	@Id
+	private Integer todoId;
+
+	@NotBlank
 	private String todoDesc;
-	private boolean status;
 
-	public Todo(int todoId, String todoDesc, boolean status) {
-		this.todoId = todoId;
-		this.todoDesc = todoDesc;
-		this.status = status;
-	}
+	private boolean todoStatus;
 
-	public int getTodoId() {
-		return todoId;
-	}
+	@Enumerated(EnumType.STRING)
+	private Type todoTag;
 
-	public void setTodoId(int todoId) {
-		this.todoId = todoId;
-	}
+	private LocalDateTime createdAt;
 
-	public String getTodoDesc() {
-		return todoDesc;
-	}
-
-	public void setTodoDesc(String todoDesc) {
-		this.todoDesc = todoDesc;
-	}
-
-	public boolean isStatus() {
-		return status;
-	}
-
-	public void setStatus(boolean status) {
-		this.status = status;
-	}
+	private LocalDateTime updatedAt;
 }

@@ -1,78 +1,95 @@
 package com.vishnu.todo.service;
 
 import com.vishnu.todo.entities.Todo;
-import com.vishnu.todo.repo.TodoListRepo;
+import com.vishnu.todo.entities.Type;
+import com.vishnu.todo.repo.TodoRepo;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
+@Service
 public class TodoService {
 	@Autowired
-	TodoListRepo todoListRepo;
+	TodoRepo todoRepo;
 
 	public List<Todo> getTodoList() {
-		return todoListRepo.getTodoList();
+		return (List<Todo>) todoRepo.findAll();
 	}
 
 	public String addItem(Todo item) {
-		todoListRepo.getTodoList().add(item);
-		return "Todo item added to the data";
+		if (!todoRepo.existsById(item.getTodoId())){
+			todoRepo.save(item);
+			return "Added 1 item";
+		}else{
+			return "Item already found";
+		}
 	}
 
 	public String updateItem(Integer id, boolean flag) {
-		for (Todo todo:todoListRepo.getTodoList()) {
-			if (todo.getTodoId()==id){
-				todo.setStatus(flag);
-				return "todo with id: "+id+" is updated!!";
-			}
+		Todo todo = todoRepo.findById(id).orElse(null);
+		if (todo!=null){
+			todo.setTodoStatus(flag);
+			todoRepo.save(todo);
+			return "item updated";
 		}
-		return "Invalid Id or object with that id doesn't exist";
+		return "item not found";
 	}
 
 	public String deleteItem(Integer id) {
-		for (Todo todo:todoListRepo.getTodoList()) {
-			if (todo.getTodoId()==id){
-				todoListRepo.getTodoList().remove(todo);
-				return "todo with id: "+id+" is deleted!!";
-			}
+		if (todoRepo.existsById(id)){
+			todoRepo.deleteById(id);
+			return "item deleted";
+		}else{
+			return "Item not found";
 		}
-		return "Invalid Id or object with that id doesn't exist";
 	}
 
-	public String addItems(Todo[] todoItems) {
-		Collections.addAll(todoListRepo.getTodoList(), todoItems);
-		return "all Item added to the list";
+	public String addItems(List<Todo> todoItems) {
+		todoRepo.saveAll(todoItems);
+		return "added all items successfully";
 	}
+
 
 	public String updateAll(boolean flag) {
-		for (Todo todoItem:todoListRepo.getTodoList()) {
-			todoItem.setStatus(flag);
-		}
-		return "All task completed!!";
+		todoRepo.findAll().forEach(todo -> {
+			todo.setTodoStatus(flag);
+			todoRepo.save(todo);
+		});
+		return "all items updated successfully";
 	}
 
 	public String deleteAll() {
-		todoListRepo.getTodoList().clear();
-		return "All task deleted!!";
+		todoRepo.deleteAll();
+		return "all items deleted";
 	}
 
-	public List<Todo> getAllUndone() {
-		return todoListRepo.getTodoList().stream().filter((todo)->!todo.isStatus()).collect(Collectors.toList());
+	public List<Todo> getAllUndone(boolean flag) {
+		return todoRepo.findByTodoStatusEquals(flag);
 	}
 
 	public List<Todo> deleteAList(List<Integer> ids) {
-		for (Integer id : ids) {
-			for (int j = 0; j < todoListRepo.getTodoList().size(); j++) {
-				if (id.equals(todoListRepo.getTodoList().get(j).getTodoId())) {
-					todoListRepo.getTodoList().remove(todoListRepo.getTodoList().get(j));
-					break;
-				}
-			}
-		}
-		return todoListRepo.getTodoList();
+		List<Todo> deletedList = (List<Todo>) todoRepo.findAllById(ids);
+		todoRepo.deleteAllById(ids);
+		return deletedList;
+	}
+
+	public List<Todo> getItemsLessTimeAndTrue(LocalDateTime dateTime, boolean flag) {
+		return todoRepo.findByCreatedAtGreaterThanEqualAndTodoStatusEquals(dateTime,flag);
+	}
+
+	public List<Todo> getItemsByTodoTypeAndIsFalse(Type type, boolean flag) {
+		return todoRepo.findByTodoTagIsAndTodoStatusIs(type,flag);
+	}
+
+	@Transactional
+	public String updateItemsStatusWithType(Type type, boolean flag) {
+		todoRepo.updateStatusWithType(type.name(),flag);
+		return "updated";
 	}
 }
